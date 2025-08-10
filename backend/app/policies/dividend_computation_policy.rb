@@ -7,11 +7,11 @@ class DividendComputationPolicy < ApplicationPolicy
     company_administrator.present? || company_lawyer.present?
   end
 
-  def create?
+  def show?
     index?
   end
 
-  def investor_breakdown?
+  def create?
     index?
   end
 
