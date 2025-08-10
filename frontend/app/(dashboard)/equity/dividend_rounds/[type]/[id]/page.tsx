@@ -155,7 +155,7 @@ type DividendComputationOutput = DividendComputation["investor_breakdown"][numbe
 const DividendComputation = ({ id }: { id: string }) => {
   const company = useCurrentCompany();
   const router = useRouter();
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [approveDistributionModalOpen, setApproveDistributionModalOpen] = useState(false);
 
   const { data: dividendComputation, isLoading } = useQuery({
     queryKey: ["dividend-computation", id],
@@ -171,7 +171,6 @@ const DividendComputation = ({ id }: { id: string }) => {
   });
 
   const dividendOutputs = dividendComputation?.investor_breakdown || [];
-
   const columnHelper = createColumnHelper<DividendComputationOutput>();
   const columns = useMemo(
     () => [
@@ -257,14 +256,11 @@ const DividendComputation = ({ id }: { id: string }) => {
         onRowClicked={onRowClicked}
         searchColumn="investor"
         actions={
-          dividendComputation.approved_at ? (
-            <div className="text-muted-foreground flex items-center gap-2 text-sm">
-              <Circle className="size-4 text-green-600" />
-              Approved at {formatDate(dividendComputation.approved_at)}
-            </div>
-          ) : (
-            <ApproveDistributionModal open={isModalOpen} onOpenChange={setIsModalOpen} data={dividendComputation} />
-          )
+          <ApproveDistributionModal
+            open={approveDistributionModalOpen}
+            onOpenChange={setApproveDistributionModalOpen}
+            data={dividendComputation}
+          />
         }
       />
     </>
@@ -304,9 +300,8 @@ export const ApproveDistributionModal = ({
       });
       return response.json();
     },
-    onSuccess: (result) => {
+    onSuccess: (result: { id: number }) => {
       onOpenChange(false);
-      // Redirect to the dividend round page
       router.push(`/equity/dividend_rounds/round/${result.id}`);
     },
   });
@@ -369,7 +364,7 @@ export const ApproveDistributionModal = ({
 
           <Separator />
 
-          <div className="flex justify-between font-medium">
+          <div className="mb-2 flex justify-between font-medium">
             <span>Total cost:</span>
             <span>
               {formatMoney(
