@@ -90,6 +90,7 @@ scope path: :internal, module: :internal do
     resources :dividend_computations, only: [:index, :create] do
       member do
         get :investor_breakdown
+        post :approve
       end
     end
   end

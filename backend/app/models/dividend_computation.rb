@@ -115,6 +115,8 @@ class DividendComputation < ApplicationRecord
         status: Dividend::ISSUED # TODO (sharang): set `PENDING_SIGNUP` if user.encrypted_password is ""
       )
     end
+
+    dividend_round
   end
 
   def dividends_info

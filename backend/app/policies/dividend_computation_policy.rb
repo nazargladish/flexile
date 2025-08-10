@@ -14,4 +14,8 @@ class DividendComputationPolicy < ApplicationPolicy
   def investor_breakdown?
     index?
   end
+
+  def approve?
+    index?
+  end
 end

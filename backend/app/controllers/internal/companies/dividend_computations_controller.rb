@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class Internal::Companies::DividendComputationsController < Internal::Companies::BaseController
-  before_action :set_dividend_computation, only: [:investor_breakdown]
+  before_action :set_dividend_computation, only: [:investor_breakdown, :approve]
 
   def index
     authorize DividendComputation
@@ -20,6 +20,16 @@ class Internal::Companies::DividendComputationsController < Internal::Companies:
     ).process
 
     render json: { id: dividend_computation.id }, status: :created
+  rescue StandardError => e
+    render json: { error_message: e.message }, status: :unprocessable_entity
+  end
+
+  def approve
+    authorize @dividend_computation
+
+    dividend_round = @dividend_computation.generate_dividends
+
+    render json: { id: dividend_round.id }, status: :created
   rescue StandardError => e
     render json: { error_message: e.message }, status: :unprocessable_entity
   end
