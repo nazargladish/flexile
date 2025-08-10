@@ -6,6 +6,7 @@ class DividendRound < ApplicationRecord
   belongs_to :company
   has_many :dividends
   has_many :investor_dividend_rounds
+  has_one :dividend_computation
 
   validates :issued_at, presence: true
   validates :number_of_shares, presence: true, numericality: { greater_than_or_equal_to: 0 }

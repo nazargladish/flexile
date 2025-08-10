@@ -137,6 +137,8 @@ const dividendComputationSchema = z.object({
   dividends_issuance_date: z.string(),
   return_of_capital: z.boolean(),
   number_of_shareholders: z.number(),
+  approved_at: z.string().nullable(),
+  dividend_round_id: z.number().nullable(),
   investor_breakdown: z.array(
     z.object({
       investor_name: z.string(),
@@ -235,6 +237,13 @@ const DividendComputation = ({ id }: { id: string }) => {
     }
   };
 
+  // Redirect to dividend round if already approved
+  // Prevent re-approval
+  if (dividendComputation?.approved_at && dividendComputation.dividend_round_id) {
+    router.replace(`/equity/dividend_rounds/round/${dividendComputation.dividend_round_id}`);
+    return null;
+  }
+
   if (isLoading || !dividendComputation) {
     return <TableSkeleton columns={5} />;
   }
@@ -248,7 +257,14 @@ const DividendComputation = ({ id }: { id: string }) => {
         onRowClicked={onRowClicked}
         searchColumn="investor"
         actions={
-          <ApproveDistributionModal open={isModalOpen} onOpenChange={setIsModalOpen} data={dividendComputation} />
+          dividendComputation.approved_at ? (
+            <div className="text-muted-foreground flex items-center gap-2 text-sm">
+              <Circle className="size-4 text-green-600" />
+              Approved at {formatDate(dividendComputation.approved_at)}
+            </div>
+          ) : (
+            <ApproveDistributionModal open={isModalOpen} onOpenChange={setIsModalOpen} data={dividendComputation} />
+          )
         }
       />
     </>

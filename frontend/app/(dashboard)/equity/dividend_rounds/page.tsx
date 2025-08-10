@@ -36,6 +36,7 @@ const dividendComputationSchema = z.array(
     dividends_issuance_date: z.string(),
     return_of_capital: z.boolean(),
     number_of_shareholders: z.number(),
+    dividend_round_id: z.number().nullable(),
   }),
 );
 

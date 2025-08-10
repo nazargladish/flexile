@@ -14,6 +14,8 @@ class DividendComputationPresenter
       dividends_issuance_date: dividend_computation.dividends_issuance_date,
       return_of_capital: dividend_computation.return_of_capital,
       number_of_shareholders: dividend_computation.number_of_shareholders,
+      approved_at: dividend_computation.approved_at&.iso8601,
+      dividend_round_id: dividend_computation.dividend_round_id,
     }
   end
 end

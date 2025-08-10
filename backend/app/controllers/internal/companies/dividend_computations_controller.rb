@@ -7,6 +7,7 @@ class Internal::Companies::DividendComputationsController < Internal::Companies:
     authorize DividendComputation
 
     dividend_computations = Current.company.dividend_computations
+      .pending_approval
       .with_shareholder_count
       .order(id: :desc)
       .map do |computation|
@@ -43,7 +44,13 @@ class Internal::Companies::DividendComputationsController < Internal::Companies:
   def approve
     authorize @dividend_computation
 
+    if @dividend_computation.approved?
+      render json: { error_message: "This dividend computation has already been approved" }, status: :unprocessable_entity
+      return
+    end
+
     dividend_round = @dividend_computation.generate_dividends
+    @dividend_computation.mark_as_approved!(dividend_round)
 
     render json: { id: dividend_round.id }, status: :created
   rescue StandardError => e

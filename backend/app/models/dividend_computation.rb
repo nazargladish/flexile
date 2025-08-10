@@ -5,6 +5,7 @@ class DividendComputation < ApplicationRecord
 
   belongs_to :company
   has_many :dividend_computation_outputs, dependent: :destroy
+  belongs_to :dividend_round, optional: true
 
   validates :total_amount_in_usd, presence: true
   validates :dividends_issuance_date, presence: true
@@ -14,6 +15,17 @@ class DividendComputation < ApplicationRecord
       .joins("LEFT JOIN dividend_computation_outputs ON dividend_computations.id = dividend_computation_outputs.dividend_computation_id")
       .group("dividend_computations.id")
   }
+
+  scope :approved, -> { where.not(approved_at: nil) }
+  scope :pending_approval, -> { where(approved_at: nil) }
+
+  def approved?
+    approved_at.present?
+  end
+
+  def mark_as_approved!(dividend_round)
+    update!(approved_at: Time.current, dividend_round: dividend_round)
+  end
 
   def number_of_shareholders
     respond_to?(:number_of_shareholders_from_query) ? number_of_shareholders_from_query : dividend_computation_outputs.distinct.count(:company_investor_id)

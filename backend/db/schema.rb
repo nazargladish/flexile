@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_08_07_142705) do
+ActiveRecord::Schema[8.0].define(version: 2025_08_10_110025) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -226,7 +226,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_07_142705) do
     t.bigint "company_id", null: false
     t.string "title", null: false
     t.text "body", null: false
-    t.text "video_url"
     t.datetime "sent_at"
     t.datetime "created_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
     t.datetime "updated_at", null: false
@@ -263,6 +262,15 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_07_142705) do
     t.string "status", null: false
     t.string "invoice_number", null: false
     t.index ["company_id"], name: "index_consolidated_invoices_on_company_id"
+  end
+
+  create_table "consolidated_invoices_dividend_rounds", force: :cascade do |t|
+    t.bigint "consolidated_invoice_id", null: false
+    t.bigint "dividend_round_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["consolidated_invoice_id"], name: "idx_on_consolidated_invoice_id_9579ba3fe3"
+    t.index ["dividend_round_id"], name: "idx_on_dividend_round_id_ad0a89cd48"
   end
 
   create_table "consolidated_invoices_invoices", force: :cascade do |t|
@@ -330,6 +338,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_07_142705) do
     t.string "investor_name"
     t.bigint "company_investor_id"
     t.decimal "qualified_dividend_amount_usd", null: false
+    t.bigint "investment_amount_in_cents"
     t.index ["company_investor_id"], name: "index_dividend_computation_outputs_on_company_investor_id"
     t.index ["dividend_computation_id"], name: "index_dividend_computation_outputs_on_dividend_computation_id"
   end
@@ -342,7 +351,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_07_142705) do
     t.date "dividends_issuance_date", null: false
     t.string "external_id", null: false
     t.boolean "return_of_capital", null: false
+    t.datetime "approved_at"
+    t.bigint "dividend_round_id"
+    t.index ["approved_at"], name: "index_dividend_computations_on_approved_at"
     t.index ["company_id"], name: "index_dividend_computations_on_company_id"
+    t.index ["dividend_round_id"], name: "index_dividend_computations_on_dividend_round_id"
     t.index ["external_id"], name: "index_dividend_computations_on_external_id", unique: true
   end
 
@@ -401,6 +414,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_07_142705) do
     t.bigint "user_compliance_info_id"
     t.bigint "qualified_amount_cents", null: false
     t.datetime "signed_release_at"
+    t.bigint "investment_amount_in_cents"
     t.index ["company_id"], name: "index_dividends_on_company_id"
     t.index ["company_investor_id"], name: "index_dividends_on_company_investor_id"
     t.index ["dividend_round_id"], name: "index_dividends_on_dividend_round_id"
@@ -923,10 +937,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_07_142705) do
     t.boolean "team_member", default: false, null: false
     t.boolean "sent_invalid_tax_id_email", default: false, null: false
     t.string "clerk_id"
+    t.bigint "signup_invite_link_id"
     t.string "otp_secret_key"
     t.integer "otp_failed_attempts_count", default: 0, null: false
     t.datetime "otp_first_failed_at"
-    t.bigint "signup_invite_link_id"
     t.index ["clerk_id"], name: "index_users_on_clerk_id", unique: true
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
@@ -1007,4 +1021,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_07_142705) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "consolidated_invoices_dividend_rounds", "consolidated_invoices"
+  add_foreign_key "consolidated_invoices_dividend_rounds", "dividend_rounds"
+  add_foreign_key "dividend_computations", "dividend_rounds"
 end
