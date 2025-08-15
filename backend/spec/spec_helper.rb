@@ -64,25 +64,11 @@ configure_vcr
 WebMock.disable_net_connect!(net_http_connect_on_start: true, allow: ["api.knapsackpro.com"])
 
 RSpec.configure do |config|
-  # Global VCR for Playwright tests
   config.around(:each) do |example|
     VCR.use_cassette("global_external_api", record: :once) do
       example.run
     end
   end
-  # config.before(:suite) do
-  #   if ENV["PLAYWRIGHT_TEST"] == "true"
-  #     VCR.insert_cassette("playwright/stripe_requests",
-  #                         record: BUILDING_ON_CI ? :none : :once,
-  #                         match_requests_on: [:method, :uri])
-  #   end
-  # end
-
-  # config.after(:suite) do
-  #   if ENV["PLAYWRIGHT_TEST"] == "true"
-  #     VCR.eject_cassette if VCR.current_cassette
-  #   end
-  # end
 
   config.expect_with :rspec do |expectations|
     expectations.include_chain_clauses_in_custom_matcher_descriptions = true
@@ -146,33 +132,6 @@ RSpec.configure do |config|
       Sidekiq::Testing.fake!
     end
     example.run
-  end
-
-  # Enable VCR for system tests (including Playwright-driven tests)
-  config.around(:each, type: :system) do |example|
-    cassette_name = if example.metadata[:playwright]
-      "playwright/#{example.description.parameterize}"
-    else
-      "system/#{example.description.parameterize}"
-    end
-
-    VCR.use_cassette(cassette_name, record: BUILDING_ON_CI ? :none : :once) do
-      example.run
-    end
-  end
-
-  # Tag-based VCR for specific Stripe tests
-  config.around(:each, :vcr_stripe) do |example|
-    VCR.use_cassette("stripe/#{example.description.parameterize}", record: BUILDING_ON_CI ? :none : :once) do
-      example.run
-    end
-  end
-
-  # Legacy support for tests that still need real Stripe requests (gradually remove)
-  config.around(:each, :allow_stripe_requests) do |example|
-    VCR.use_cassette("stripe/legacy/#{example.description.parameterize}", record: BUILDING_ON_CI ? :none : :once) do
-      example.run
-    end
   end
 
   config.before(:each, :skip_pdf_generation) do |_|
