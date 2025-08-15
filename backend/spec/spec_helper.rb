@@ -51,6 +51,11 @@ def configure_vcr
     config.filter_sensitive_data("<GUMROAD_BANK_ACCOUNT_NUMBER>") { GlobalConfig.dig("wise_gumroad_account", "account_number") }
     config.filter_sensitive_data("<QUICKBOOKS_BASIC_AUTH_STRING>") { Base64.strict_encode64("#{GlobalConfig.get('QUICKBOOKS_CLIENT_ID')}:#{GlobalConfig.get('QUICKBOOKS_CLIENT_SECRET')}") }
     config.filter_sensitive_data("<WISE_PROFILE_ID>") { GlobalConfig.get("WISE_PROFILE_ID") }
+
+    # Playwright-specific configuration
+    if ENV["PLAYWRIGHT_TEST"] == "true"
+      config.allow_http_connections_when_no_cassette = false
+    end
   end
 end
 
@@ -147,6 +152,21 @@ RSpec.configure do |config|
   config.around(:each, :allow_stripe_requests) do |example|
     VCR.use_cassette("stripe/legacy/#{example.description.parameterize}", record: BUILDING_ON_CI ? :none : :once) do
       example.run
+    end
+  end
+
+  # Global VCR for Playwright tests
+  config.before(:suite) do
+    if ENV["PLAYWRIGHT_TEST"] == "true"
+      VCR.insert_cassette("playwright/stripe_requests",
+                          record: BUILDING_ON_CI ? :none : :once,
+                          match_requests_on: [:method, :uri])
+    end
+  end
+
+  config.after(:suite) do
+    if ENV["PLAYWRIGHT_TEST"] == "true"
+      VCR.eject_cassette if VCR.current_cassette
     end
   end
 
