@@ -64,6 +64,26 @@ configure_vcr
 WebMock.disable_net_connect!(net_http_connect_on_start: true, allow: ["api.knapsackpro.com"])
 
 RSpec.configure do |config|
+  # Global VCR for Playwright tests
+  config.around(:each) do |example|
+    VCR.use_cassette("global_external_api", record: :once) do
+      example.run
+    end
+  end
+  # config.before(:suite) do
+  #   if ENV["PLAYWRIGHT_TEST"] == "true"
+  #     VCR.insert_cassette("playwright/stripe_requests",
+  #                         record: BUILDING_ON_CI ? :none : :once,
+  #                         match_requests_on: [:method, :uri])
+  #   end
+  # end
+
+  # config.after(:suite) do
+  #   if ENV["PLAYWRIGHT_TEST"] == "true"
+  #     VCR.eject_cassette if VCR.current_cassette
+  #   end
+  # end
+
   config.expect_with :rspec do |expectations|
     expectations.include_chain_clauses_in_custom_matcher_descriptions = true
     expectations.syntax = :expect
@@ -152,21 +172,6 @@ RSpec.configure do |config|
   config.around(:each, :allow_stripe_requests) do |example|
     VCR.use_cassette("stripe/legacy/#{example.description.parameterize}", record: BUILDING_ON_CI ? :none : :once) do
       example.run
-    end
-  end
-
-  # Global VCR for Playwright tests
-  config.before(:suite) do
-    if ENV["PLAYWRIGHT_TEST"] == "true"
-      VCR.insert_cassette("playwright/stripe_requests",
-                          record: BUILDING_ON_CI ? :none : :once,
-                          match_requests_on: [:method, :uri])
-    end
-  end
-
-  config.after(:suite) do
-    if ENV["PLAYWRIGHT_TEST"] == "true"
-      VCR.eject_cassette if VCR.current_cassette
     end
   end
 
