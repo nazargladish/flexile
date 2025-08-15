@@ -7,8 +7,8 @@ RSpec.describe Internal::Companies::AdministratorsController do
   let(:email) { "newadmin@example.com" }
 
   before do
-    allow(controller).to receive(:authenticate_user_json!).and_return(true)
-    allow(controller).to receive(:verify_authorized).and_return(true)
+    # allow(controller).to receive(:authenticate_user_json!).and_return(true)
+    # allow(controller).to receive(:verify_authorized).and_return(true)
 
     allow(controller).to receive(:current_context) do
       Current.user = admin_user
@@ -21,7 +21,7 @@ RSpec.describe Internal::Companies::AdministratorsController do
   describe "POST #create" do
     context "when user is authorized" do
       before do
-        allow(controller).to receive(:authorize).with(CompanyAdministrator).and_return(true)
+        # allow(controller).to receive(:authorize).with(CompanyAdministrator).and_return(true)
       end
 
       context "with valid email" do

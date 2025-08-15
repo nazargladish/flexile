@@ -1,0 +1,140 @@
+---
+# Global VCR cassette for Playwright Stripe requests
+# This will be automatically loaded when PLAYWRIGHT_TEST=true
+http_interactions:
+- request:
+    method: get
+    uri: https://api.stripe.com/v1/setup_intents/seti_1LS2aCFSsGLfTpetJF5ZbTzr?expand%5B%5D=payment_method
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      User-Agent:
+      - Stripe/v1 RubyBindings/12.4.0
+      Authorization:
+      - Bearer <STRIPE_SECRET_KEY>
+      Content-Type:
+      - application/x-www-form-urlencoded
+      X-Stripe-Client-Telemetry:
+      - '{"last_request_metrics":{"request_id":"req_1BumXNKS67iW86","request_duration_ms":53}}'
+      Stripe-Version:
+      - '2024-04-10'
+      X-Stripe-Client-User-Agent:
+      - '{"bindings_version":"12.4.0","lang":"ruby","lang_version":"3.3.4 p94 (2024-07-09)","platform":"arm64-darwin23","engine":"ruby","publisher":"stripe","uname":"Darwin Helens-MBP-M1.lan 23.5.0 Darwin Kernel Version 23.5.0: Wed May  1 20:12:58 PDT 2024; root:xnu-10063.121.3~5/RELEASE_ARM64_T6000 arm64","hostname":"Helens-MBP-M1.lan"}'
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Server:
+      - nginx
+      Date:
+      - Thu, 08 Aug 2024 17:03:46 GMT
+      Content-Type:
+      - application/json
+      Content-Length:
+      - '2030'
+      Connection:
+      - keep-alive
+      Access-Control-Allow-Credentials:
+      - 'true'
+      Access-Control-Allow-Methods:
+      - GET,HEAD,PUT,PATCH,POST,DELETE
+      Access-Control-Allow-Origin:
+      - "*"
+      Access-Control-Expose-Headers:
+      - Request-Id, Stripe-Manage-Version, Stripe-Should-Retry, X-Stripe-External-Auth-Required, X-Stripe-Privileged-Session-Required
+      Access-Control-Max-Age:
+      - '300'
+      Cache-Control:
+      - no-cache, no-store
+      Request-Id:
+      - req_AOyxMF944TaSmu
+      Stripe-Version:
+      - '2024-04-10'
+    body:
+      encoding: UTF-8
+      string: |-
+        {
+          "id": "<STRIPE_SETUP_INTENT_ID>",
+          "object": "setup_intent",
+          "application": null,
+          "automatic_payment_methods": null,
+          "cancellation_reason": null,
+          "client_secret": "seti_1LS2aCFSsGLfTpetJF5ZbTzr_secret_MANKZoxPk7FuMFb5jshwnLTQqBpWYu8",
+          "created": 1659375552,
+          "customer": "<STRIPE_CUSTOMER_ID>",
+          "description": null,
+          "flow_directions": null,
+          "last_setup_error": null,
+          "latest_attempt": "setatt_1LS2bAFSsGLfTpetdQeunp7j",
+          "livemode": false,
+          "mandate": "mandate_1LS2bBFSsGLfTpetzyxTIQ8Q",
+          "metadata": {},
+          "next_action": null,
+          "on_behalf_of": null,
+          "payment_method": {
+            "id": "<STRIPE_PAYMENT_METHOD_ID>",
+            "object": "payment_method",
+            "allow_redisplay": "unspecified",
+            "billing_details": {
+              "address": {
+                "city": null,
+                "country": null,
+                "line1": null,
+                "line2": null,
+                "postal_code": null,
+                "state": null
+              },
+              "email": "test@example.com",
+              "name": "Test User",
+              "phone": null
+            },
+            "created": 1659375612,
+            "customer": "<STRIPE_CUSTOMER_ID>",
+            "livemode": false,
+            "metadata": {},
+            "type": "us_bank_account",
+            "us_bank_account": {
+              "account_holder_type": "individual",
+              "account_type": "checking",
+              "bank_name": "STRIPE TEST BANK",
+              "financial_connections_account": null,
+              "fingerprint": "fyuVQhio0NPi5cGK",
+              "last4": "6789",
+              "networks": {
+                "preferred": "ach",
+                "supported": [
+                  "ach"
+                ]
+              },
+              "routing_number": "110000000",
+              "status_details": {}
+            }
+          },
+          "payment_method_configuration_details": null,
+          "payment_method_options": {
+            "us_bank_account": {
+              "financial_connections": {
+                "permissions": [
+                  "payment_method",
+                  "balances"
+                ],
+                "prefetch": []
+              },
+              "verification_method": "automatic"
+            }
+          },
+          "payment_method_types": [
+            "us_bank_account"
+          ],
+          "single_use_mandate": null,
+          "status": "succeeded",
+          "usage": "off_session"
+        }
+  recorded_at: Thu, 08 Aug 2024 17:03:46 GMT
+recorded_with: VCR 6.1.0

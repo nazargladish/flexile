@@ -18,6 +18,7 @@ export NODE_TLS_REJECT_UNAUTHORIZED=0
 export RAILS_ENV=test
 export NODE_ENV=test
 export ENABLE_DEFAULT_OTP=true
+export PLAYWRIGHT_TEST=true
 
 cd backend
 bundle exec rails db:drop db:create db:schema:load db:seed_test_data

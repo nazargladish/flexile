@@ -44,6 +44,54 @@ def configure_vcr
       end
     end
     config.default_cassette_options[:match_requests_on] = %i[method uri wise_account_requirements]
+
+    # Stripe API key filtering
+    config.filter_sensitive_data("<STRIPE_SECRET_KEY>") { GlobalConfig.get("STRIPE_SECRET_KEY") }
+    config.filter_sensitive_data("<STRIPE_PUBLISHABLE_KEY>") { GlobalConfig.get("STRIPE_PUBLISHABLE_KEY") }
+    config.filter_sensitive_data("<STRIPE_ENDPOINT_SECRET>") { GlobalConfig.get("STRIPE_ENDPOINT_SECRET") }
+
+    # Filter Stripe API keys in Authorization headers
+    config.filter_sensitive_data("<STRIPE_AUTH_HEADER>") do |interaction|
+      if interaction.request.uri.include?("api.stripe.com") && interaction.request.headers["Authorization"]
+        auth_header = interaction.request.headers["Authorization"].first
+        auth_header if auth_header&.start_with?("Bearer sk_")
+      end
+    end
+
+    # Filter dynamic Stripe IDs in request/response bodies
+    config.filter_sensitive_data("<STRIPE_CUSTOMER_ID>") do |interaction|
+      if interaction.request.uri.include?("api.stripe.com")
+        body = interaction.response.body
+        customer_match = body.match(/"id":\s*"(cus_[a-zA-Z0-9_]+)"/)
+        customer_match[1] if customer_match
+      end
+    end
+
+    config.filter_sensitive_data("<STRIPE_SETUP_INTENT_ID>") do |interaction|
+      if interaction.request.uri.include?("api.stripe.com")
+        body = interaction.response.body
+        setup_intent_match = body.match(/"id":\s*"(seti_[a-zA-Z0-9_]+)"/)
+        setup_intent_match[1] if setup_intent_match
+      end
+    end
+
+    config.filter_sensitive_data("<STRIPE_PAYMENT_METHOD_ID>") do |interaction|
+      if interaction.request.uri.include?("api.stripe.com")
+        body = interaction.response.body
+        pm_match = body.match(/"id":\s*"(pm_[a-zA-Z0-9_]+)"/)
+        pm_match[1] if pm_match
+      end
+    end
+
+    config.filter_sensitive_data("<STRIPE_PAYMENT_INTENT_ID>") do |interaction|
+      if interaction.request.uri.include?("api.stripe.com")
+        body = interaction.response.body
+        pi_match = body.match(/"id":\s*"(pi_[a-zA-Z0-9_]+)"/)
+        pi_match[1] if pi_match
+      end
+    end
+
+    # Existing filters
     config.filter_sensitive_data("<GUMROAD_BANK_ROUTING_NUMBER>") { GlobalConfig.dig("wise_gumroad_account", "abartn") }
     config.filter_sensitive_data("<GUMROAD_BANK_ACCOUNT_NUMBER>") { GlobalConfig.dig("wise_gumroad_account", "account_number") }
     config.filter_sensitive_data("<QUICKBOOKS_BASIC_AUTH_STRING>") { Base64.strict_encode64("#{GlobalConfig.get('QUICKBOOKS_CLIENT_ID')}:#{GlobalConfig.get('QUICKBOOKS_CLIENT_SECRET')}") }
@@ -120,15 +168,30 @@ RSpec.configure do |config|
     example.run
   end
 
-  config.around(:each, :allow_stripe_requests) do |example|
-    VCR.configure do |c|
-      c.ignore_hosts("api.stripe.com")
+  # Enable VCR for system tests (including Playwright-driven tests)
+  config.around(:each, type: :system) do |example|
+    cassette_name = if example.metadata[:playwright]
+      "playwright/#{example.description.parameterize}"
+    else
+      "system/#{example.description.parameterize}"
     end
 
-    example.run
+    VCR.use_cassette(cassette_name, record: BUILDING_ON_CI ? :none : :once) do
+      example.run
+    end
+  end
 
-    VCR.configure do |c|
-      c.unignore_hosts("api.stripe.com")
+  # Tag-based VCR for specific Stripe tests
+  config.around(:each, :vcr_stripe) do |example|
+    VCR.use_cassette("stripe/#{example.description.parameterize}", record: BUILDING_ON_CI ? :none : :once) do
+      example.run
+    end
+  end
+
+  # Legacy support for tests that still need real Stripe requests (gradually remove)
+  config.around(:each, :allow_stripe_requests) do |example|
+    VCR.use_cassette("stripe/legacy/#{example.description.parameterize}", record: BUILDING_ON_CI ? :none : :once) do
+      example.run
     end
   end
 

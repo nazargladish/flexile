@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 require "active_support/core_ext/integer/time"
+require "sidekiq/testing"
+Sidekiq::Testing.inline!
 
 # The test environment is used exclusively to run your application's
 # test suite. You never need to work with it otherwise. Remember that
@@ -8,6 +10,8 @@ require "active_support/core_ext/integer/time"
 # and recreated between test runs. Don't rely on the data there!
 
 Rails.application.configure do
+  config.log_level = :info
+
   # Settings specified here will take precedence over those in config/application.rb.
 
   # While tests run files are not watched, reloading is not necessary.
@@ -68,4 +72,32 @@ Rails.application.configure do
 
   # Raise error when a before_action's only/except options reference missing actions
   config.action_controller.raise_on_missing_callback_actions = true
+
+  # Configure VCR for Playwright tests
+  config.after_initialize do
+    if defined?(VCR)
+      VCR.configure do |c|
+        c.hook_into :webmock
+        c.cassette_library_dir = Rails.root.join("spec/fixtures/vcr_cassettes")
+        c.default_cassette_options = {
+          record: ENV["CI"] ? :none : :once,
+          match_requests_on: [:method, :uri],
+        }
+
+        # Ensure all HTTP connections are intercepted
+        c.allow_http_connections_when_no_cassette = false
+      end
+
+      # Enable global VCR cassette for Playwright tests
+      if ENV["PLAYWRIGHT_TEST"] == "true"
+        at_exit do
+          VCR.eject_cassette if VCR.current_cassette
+        end
+
+        VCR.insert_cassette("playwright/stripe_requests",
+                            record: ENV["CI"] ? :none : :once,
+                            match_requests_on: [:method, :uri])
+      end
+    end
+  end
 end

@@ -1,0 +1,40 @@
+#!/bin/bash
+
+# Helper script to re-record Stripe VCR cassettes during development
+# Usage: ./bin/record_stripe_cassettes [test_pattern]
+
+set -e
+
+cd "$(dirname "$0")/.."
+
+echo "🎬 Recording Stripe VCR cassettes..."
+
+# Allow new recordings
+export VCR_RECORD_MODE=new_episodes
+
+# Record RSpec tests with Stripe interactions
+echo "📼 Recording RSpec Stripe tests..."
+if [ "$1" ]; then
+  cd backend
+  bundle exec rspec spec/ --tag vcr_stripe --grep "$1"
+  cd ..
+else
+  cd backend
+  bundle exec rspec spec/ --tag vcr_stripe
+  cd ..
+fi
+
+# Record Playwright tests with payment flows
+echo "📼 Recording Playwright payment tests..."
+if [ "$1" ]; then
+  pnpm playwright test --grep "$1"
+else
+  pnpm playwright test --grep "payment"
+fi
+
+echo "✅ Cassette recording complete!"
+echo ""
+echo "💡 Tips:"
+echo "  - Review recorded cassettes for sensitive data"
+echo "  - Commit new cassettes to version control"
+echo "  - Run tests in CI mode to verify playback works"
