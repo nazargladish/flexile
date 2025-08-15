@@ -72,32 +72,4 @@ Rails.application.configure do
 
   # Raise error when a before_action's only/except options reference missing actions
   config.action_controller.raise_on_missing_callback_actions = true
-
-  # Configure VCR for Playwright tests
-  config.after_initialize do
-    if defined?(VCR)
-      VCR.configure do |c|
-        c.hook_into :webmock
-        c.cassette_library_dir = Rails.root.join("spec/fixtures/vcr_cassettes")
-        c.default_cassette_options = {
-          record: ENV["CI"] ? :none : :once,
-          match_requests_on: [:method, :uri],
-        }
-
-        # Ensure all HTTP connections are intercepted
-        c.allow_http_connections_when_no_cassette = false
-      end
-
-      # Enable global VCR cassette for Playwright tests
-      if ENV["PLAYWRIGHT_TEST"] == "true"
-        at_exit do
-          VCR.eject_cassette if VCR.current_cassette
-        end
-
-        VCR.insert_cassette("playwright/stripe_requests",
-                            record: ENV["CI"] ? :none : :once,
-                            match_requests_on: [:method, :uri])
-      end
-    end
-  end
 end
