@@ -43,6 +43,7 @@ class ProcessPaymentIntentForConsolidatedPaymentJob
         bank_account_last_four:
       )
 
+      # TODO(nazar): this should be done in a separate job for dividends
       CreateConsolidatedInvoiceReceiptJob.perform_async(
         consolidated_payment.id,
         Time.at(charge["created"]).utc.to_fs(:long_date),

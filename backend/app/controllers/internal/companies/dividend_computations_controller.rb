@@ -38,8 +38,10 @@ class Internal::Companies::DividendComputationsController < Internal::Companies:
   def finalize
     authorize @dividend_computation
 
-    dividend_round = @dividend_computation.generate_dividends
-    @dividend_computation.mark_as_finalized!(dividend_round)
+    dividend_round = FinalizeAndChargeForDividendRound.new(
+      dividend_computation: @dividend_computation
+    ).perform
+
     render json: { id: dividend_round.id }, status: :created
   end
 

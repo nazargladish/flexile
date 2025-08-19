@@ -36,6 +36,7 @@ class ChargeConsolidatedInvoice
       transaction_type: BalanceTransaction::PAYMENT_INITIATED,
       amount_cents: intent.latest_charge.amount,
     )
+    # TODO(nazar): this should not run for dividends
     consolidated_invoice.trigger_payments if company.is_trusted?
   end
 end

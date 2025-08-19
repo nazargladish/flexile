@@ -9,6 +9,7 @@ class CreateConsolidatedInvoiceReceiptJob
     consolidated_invoice = consolidated_payment.consolidated_invoice
     pdf = CreatePdf.new(
       body_html: ApplicationController.render(
+        # Update here
         template: "ssr/consolidated_invoice_receipt",
         layout: false,
         locals: { consolidated_invoice: }

@@ -14,6 +14,7 @@ class ConsolidatedInvoicePresenter
       id:,
       created_at: created_at.iso8601,
       invoice_date:,
+      # Would be broken?
       total_contractors:,
       total_amount_in_usd:,
       status: status || default_status,

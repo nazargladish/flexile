@@ -8,6 +8,7 @@ class ConsolidatedInvoice < ApplicationRecord
   belongs_to :company
   has_many :consolidated_invoices_invoices
   has_many :invoices, through: :consolidated_invoices_invoices
+  has_one :dividend_round
   has_many :consolidated_payments
   has_many :integration_records, as: :integratable
   has_one_attached :receipt
@@ -52,14 +53,23 @@ class ConsolidatedInvoice < ApplicationRecord
   }
   scope :paid, -> { where(status: PAID) }
   scope :paid_or_pending_payment, -> { where(status: [SENT, PROCESSING, PAID]) }
+  scope :for_dividends, -> { joins(:dividend_round) }
+  scope :for_invoices, -> { where.missing(:dividend_round) }
 
   after_commit :sync_with_quickbooks, on: :create
+
+  # Add a spec
+  def dividend_related?
+    dividend_round.present?
+  end
 
   def flexile_fee_usd
     flexile_fee_cents / 100.0
   end
 
   def trigger_payments
+    # Return early if the invoice is dividend related
+    # Add a spec
     invoices.each { |invoice| EnqueueInvoicePayment.new(invoice:).perform }
   end
 
@@ -74,6 +84,7 @@ class ConsolidatedInvoice < ApplicationRecord
   # If the `.with_total_contractors` scope is used (avoids N+1 queries) then `total_contractors_from_query`
   # attribute will be set. However, we also want to support a consistent interface when we have instances
   # that were fetched without this scope. In this case, we need to perform a query to lookup the value.
+  # Replace with total dividends count or something else
   def total_contractors
     respond_to?(:total_contractors_from_query) ? total_contractors_from_query : invoices.unique_contractors_count
   end
@@ -128,6 +139,7 @@ class ConsolidatedInvoice < ApplicationRecord
   end
 
   def contractor_payments_expected_by
+    # Probably should be updated to use dividends instead of invoices
     expected_by = created_at + company.contractor_payment_processing_time_in_days.days
     expected_by = expected_by.next_weekday if expected_by.on_weekend?
     expected_by

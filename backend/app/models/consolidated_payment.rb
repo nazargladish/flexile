@@ -28,6 +28,7 @@ class ConsolidatedPayment < ApplicationRecord
     Stripe::PaymentIntent.retrieve(id: stripe_payment_intent_id, expand: ["latest_charge"])
   end
 
+  # TODO(nazar): this should not run for dividends
   def refundable?
     status.in?(REFUNDABLE_STATUSES) && consolidated_invoice.invoices.alive.paid_or_mid_payment.none?
   end

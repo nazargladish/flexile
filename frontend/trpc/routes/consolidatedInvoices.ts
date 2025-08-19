@@ -31,6 +31,7 @@ export const consolidatedInvoicesRouter = createRouter({
         invoiceDate: consolidatedInvoices.invoiceDate,
         totalCents: consolidatedInvoices.totalCents,
         status: consolidatedInvoices.status,
+        // Should be updated to use dividends instead of invoices
         totalContractors: sql<number>`count(distinct invoices.user_id)`,
         attachment: pick(activeStorageBlobs, "key", "filename"),
       })

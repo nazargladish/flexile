@@ -4,6 +4,7 @@ class DividendRound < ApplicationRecord
   include ExternalId
 
   belongs_to :company
+  belongs_to :consolidated_invoice, optional: true
   has_many :dividends
   has_many :dividend_computations
   has_many :investor_dividend_rounds
@@ -14,6 +15,7 @@ class DividendRound < ApplicationRecord
   validates :total_amount_in_cents, presence: true, numericality: { greater_than: 0 }
   validates :status, presence: true, inclusion: { in: %w(Issued Paid) }
   validates :ready_for_payment, inclusion: { in: [true, false] }
+  validates :consolidated_invoice_id, uniqueness: true, allow_nil: true, immutable: true
 
   scope :ready_for_payment, -> { where(ready_for_payment: true) }
 

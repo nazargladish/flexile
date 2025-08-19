@@ -15,6 +15,7 @@ class CompanyMailerPreview < ActionMailer::Preview
     if consolidated_invoice.receipt.blank?
       pdf = CreatePdf.new(
         body_html: ApplicationController.render(
+          # Update here (is this function ever even called?)
           template: "ssr/consolidated_invoice_receipt",
           layout: false,
           locals: { consolidated_invoice: @consolidated_invoice }

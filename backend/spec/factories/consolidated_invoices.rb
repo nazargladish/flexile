@@ -24,5 +24,28 @@ FactoryBot.define do
       paid_at { Time.current }
       receipt { { io: File.open(Rails.root.join("spec/fixtures/files/sample.pdf")), filename: "receipt.pdf", content_type: "application/pdf" } }
     end
+
+    trait :for_dividend_round do
+      transient do
+        dividend_round { nil }
+      end
+
+      after :create do |ci, evaluator|
+        if evaluator.dividend_round
+          evaluator.dividend_round.update!(consolidated_invoice: ci)
+        end
+      end
+
+      # For dividend consolidated invoices, don't create regular invoices
+      after :build do |ci, evaluator|
+        # Skip the default invoice creation if this is for a dividend round
+        if evaluator.dividend_round
+          ci.invoice_amount_cents ||= evaluator.dividend_round.total_amount_in_cents
+          ci.flexile_fee_cents ||= 1000 # Mock fee
+          ci.transfer_fee_cents ||= 0
+          ci.total_cents ||= ci.invoice_amount_cents + ci.transfer_fee_cents + ci.flexile_fee_cents
+        end
+      end
+    end
   end
 end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_08_16_133514) do
+ActiveRecord::Schema[8.0].define(version: 2025_08_16_233341) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -347,7 +347,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_16_133514) do
     t.boolean "return_of_capital", null: false
     t.boolean "ready_for_payment", default: false, null: false
     t.text "release_document"
+    t.bigint "consolidated_invoice_id"
     t.index ["company_id"], name: "index_dividend_rounds_on_company_id"
+    t.index ["consolidated_invoice_id"], name: "index_dividend_rounds_on_consolidated_invoice_id"
     t.index ["external_id"], name: "index_dividend_rounds_on_external_id", unique: true
   end
 
@@ -974,4 +976,5 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_16_133514) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "dividend_computations", "dividend_rounds"
+  add_foreign_key "dividend_rounds", "consolidated_invoices"
 end

@@ -28,7 +28,12 @@ class ProcessPayoutForConsolidatedPaymentJob
     def process_as_paid!
       consolidated_payment.update!(succeeded_at: Time.current)
       consolidated_invoice = consolidated_payment.consolidated_invoice
+
+      # MarkDividendRoundAsReadyForPaymentJob should look at the line below
       consolidated_invoice.mark_as_paid!(timestamp: Time.current)
+      # This should not run for dividends
+      # Send emails to company investors
+      # This now cannot be disputed as it moved to Wise
       consolidated_invoice.trigger_payments
     end
 

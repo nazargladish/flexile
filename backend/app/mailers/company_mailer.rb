@@ -28,6 +28,7 @@ class CompanyMailer < ApplicationMailer
     user = User.find(user_id)
     consolidated_payment = ConsolidatedPayment.find(consolidated_payment_id)
     @consolidated_invoice = consolidated_payment.consolidated_invoice
+    # update this to use dividends instead of invoices
     contractors = User.where(id: @consolidated_invoice.invoices.alive.pluck(:user_id))
     @contractor_count = contractors.count
     @country_count = contractors.pluck(:country_code).uniq.count
