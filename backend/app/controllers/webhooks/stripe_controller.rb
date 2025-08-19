@@ -7,7 +7,7 @@ class Webhooks::StripeController < ApplicationController
     payload = request.raw_post
     sig_header = request.env["HTTP_STRIPE_SIGNATURE"]
     event = nil
-    endpoint_secret = GlobalConfig.get("STRIPE_ENDPOINT_SECRET")
+    endpoint_secret = "whsec_7cb1b19fd8370124887cc6b85e8c26ef0f71b32a8f358c64949f12b5a28e9e12"
 
     begin
       event = Stripe::Webhook.construct_event(

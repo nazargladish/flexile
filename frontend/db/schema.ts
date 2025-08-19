@@ -2348,3 +2348,26 @@ export const companyUpdatesRelations = relations(companyUpdates, ({ one }) => ({
     references: [companies.id],
   }),
 }));
+
+export const consolidatedInvoicesDividendRounds = pgTable(
+  "consolidated_invoices_dividend_rounds",
+  {
+    id: bigserial({ mode: "bigint" }).primaryKey().notNull(),
+    consolidatedInvoiceId: bigint("consolidated_invoice_id", { mode: "bigint" }).notNull(),
+    dividendRoundId: bigint("dividend_round_id", { mode: "bigint" }).notNull(),
+    createdAt: timestamp("created_at", { precision: 6, mode: "date" }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { precision: 6, mode: "date" })
+      .notNull()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [
+    index("index_consolidated_invoices_dividend_rounds_on_consolidated_invoice_id").using(
+      "btree",
+      table.consolidatedInvoiceId.asc().nullsLast().op("int8_ops"),
+    ),
+    index("index_consolidated_invoices_dividend_rounds_on_dividend_round_id").using(
+      "btree",
+      table.dividendRoundId.asc().nullsLast().op("int8_ops"),
+    ),
+  ],
+);

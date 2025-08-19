@@ -8,6 +8,8 @@ class ConsolidatedInvoice < ApplicationRecord
   belongs_to :company
   has_many :consolidated_invoices_invoices
   has_many :invoices, through: :consolidated_invoices_invoices
+  has_many :consolidated_invoices_dividend_rounds, dependent: :destroy
+  has_many :dividend_rounds, through: :consolidated_invoices_dividend_rounds
   has_many :consolidated_payments
   has_many :integration_records, as: :integratable
   has_one_attached :receipt
@@ -52,6 +54,7 @@ class ConsolidatedInvoice < ApplicationRecord
   }
   scope :paid, -> { where(status: PAID) }
   scope :paid_or_pending_payment, -> { where(status: [SENT, PROCESSING, PAID]) }
+  scope :dividend_related, -> { joins(:dividend_rounds) }
 
   after_commit :sync_with_quickbooks, on: :create
 
@@ -60,7 +63,18 @@ class ConsolidatedInvoice < ApplicationRecord
   end
 
   def trigger_payments
+    if is_dividend_related?
+      Rails.logger.info("Skipping payment trigger for dividend-related consolidated invoice #{id}")
+      return
+    end
+
+    Rails.logger.info("Triggering payments for non-dividend consolidated invoice #{id} with #{invoices.count} invoices")
     invoices.each { |invoice| EnqueueInvoicePayment.new(invoice:).perform }
+    Rails.logger.info("Successfully triggered payments for consolidated invoice #{id}")
+  end
+
+  def is_dividend_related?
+    dividend_rounds.exists?
   end
 
   def total_amount_in_usd

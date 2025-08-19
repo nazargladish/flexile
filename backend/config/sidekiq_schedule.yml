@@ -34,12 +34,15 @@ check_tin_validity:
   description: Queries the IRS API to check the validity of pending TINs
 
 transfer_from_stripe_to_wise_job:
-  cron: "0 */12 * * *" # 12 AM UTC and 12 PM UTC
-  description: Moves consolidated invoice payments money from Stripe to Wise
+  cron: "* * * * *" # Every minute
   class: TransferFromStripeToWiseJob
 
+mark_dividend_rounds_ready_for_payment_job:
+  cron: "* * * * *" # Every minute
+  class: MarkDividendRoundsReadyForPaymentJob
+
 pay_all_dividends_job:
-  cron: "0 1 * * *" # Every day at UTC 01:00
+  cron: "* * * * *" # Every minute
   description: Attempts to pay pending dividends
   class: PayAllDividendsJob
 

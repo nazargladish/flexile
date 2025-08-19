@@ -44,16 +44,48 @@ class Internal::Companies::DividendComputationsController < Internal::Companies:
   def approve
     authorize @dividend_computation
 
+    Rails.logger.info("Starting approval process for dividend computation #{@dividend_computation.id}")
+
     if @dividend_computation.approved?
+      Rails.logger.warn("Dividend computation #{@dividend_computation.id} already approved, skipping")
       render json: { error_message: "This dividend computation has already been approved" }, status: :unprocessable_entity
       return
     end
 
-    dividend_round = @dividend_computation.generate_dividends
-    @dividend_computation.mark_as_approved!(dividend_round)
+    dividend_round = nil
+
+    ActiveRecord::Base.transaction do
+      Rails.logger.info("Creating dividend round for computation #{@dividend_computation.id}")
+
+      # Create dividend round
+      dividend_round = @dividend_computation.generate_dividends
+
+      Rails.logger.info("Created dividend round #{dividend_round.id} with #{dividend_round.dividends.count} dividends")
+
+      # Create consolidated invoice
+      # TODO(naz): There should be some wrapper service that both invoices and charges, so that it can be called from Rails console nicely
+      consolidated_invoice = DividendRoundConsolidatedInvoiceCreation.new(dividend_round).process
+
+      Rails.logger.info("Created consolidated invoice #{consolidated_invoice.id} for dividend round #{dividend_round.id}")
+
+      # Mark computation as approved
+      @dividend_computation.mark_as_approved!(dividend_round)
+
+      Rails.logger.info("Marked dividend computation #{@dividend_computation.id} as approved")
+
+      # Trigger fund pull separately
+      Rails.logger.info("Initiating fund pull for consolidated invoice #{consolidated_invoice.id}")
+      ChargeConsolidatedInvoice.new(consolidated_invoice.id).process
+
+      Rails.logger.info("Fund pull initiated for consolidated invoice #{consolidated_invoice.id}")
+    end
+
+    Rails.logger.info("Successfully completed approval process for dividend computation #{@dividend_computation.id}")
 
     render json: { id: dividend_round.id }, status: :created
   rescue StandardError => e
+    Rails.logger.error("Error during dividend computation approval: #{e.message}")
+    Rails.logger.error(e.backtrace.join("\n"))
     render json: { error_message: e.message }, status: :unprocessable_entity
   end
 

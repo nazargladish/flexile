@@ -9,6 +9,9 @@ class CreateConsolidatedInvoiceReceiptJob
     consolidated_invoice = consolidated_payment.consolidated_invoice
     pdf = CreatePdf.new(
       body_html: ApplicationController.render(
+        # TODO(naz): this must be changed for consolidated invoices for dividends
+        # It's specific to consolidated invoices for contractors
+        # Maybe we don't need that at all
         template: "ssr/consolidated_invoice_receipt",
         layout: false,
         locals: { consolidated_invoice: }
