@@ -4,7 +4,6 @@ class DividendComputation < ApplicationRecord
   include ExternalId
 
   belongs_to :company
-  belongs_to :dividend_round, optional: true
   has_many :dividend_computation_outputs, dependent: :destroy
 
   validates :total_amount_in_usd, presence: true
@@ -21,8 +20,8 @@ class DividendComputation < ApplicationRecord
     finalized_at.present?
   end
 
-  def mark_as_finalized!(dividend_round)
-    update!(finalized_at: Time.current, dividend_round:)
+  def mark_as_finalized!
+    update!(finalized_at: Time.current)
   end
 
   def to_csv

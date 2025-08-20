@@ -64,7 +64,7 @@ export const dividendComputationsFactory = {
         dividendsIssuanceDate: today(getLocalTimeZone()).add({ days: 15 }).toString(),
         returnOfCapital: false,
         finalizedAt: null,
-        dividendRoundId: null,
+
         ...overrides,
       })
       .returning();
@@ -80,6 +80,7 @@ export const dividendComputationsFactory = {
         totalAmountInUsd: "20000.0",
         qualifiedDividendAmountUsd: "20000.0",
         companyInvestorId: investor1.id,
+        investmentAmountCents: 200000n,
       },
       {
         dividendComputationId: insertedDividendComputation.id,
@@ -90,6 +91,7 @@ export const dividendComputationsFactory = {
         totalAmountInUsd: "40000.0",
         qualifiedDividendAmountUsd: "40000.0",
         companyInvestorId: investor2.id,
+        investmentAmountCents: 200000n,
       },
     ]);
 

@@ -5,7 +5,6 @@ class DividendRound < ApplicationRecord
 
   belongs_to :company
   has_many :dividends
-  has_many :dividend_computations
   has_many :investor_dividend_rounds
 
   validates :issued_at, presence: true

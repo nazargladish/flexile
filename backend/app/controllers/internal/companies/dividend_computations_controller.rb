@@ -33,10 +33,6 @@ class Internal::Companies::DividendComputationsController < Internal::Companies:
   def show
     authorize @dividend_computation
 
-    if @dividend_computation.finalized?
-      json_redirect "/equity/dividend_rounds/round/#{@dividend_computation.dividend_round.id}"
-      return
-    end
 
     render json: DividendComputationPresenter.new(@dividend_computation).props
   end
