@@ -17,7 +17,7 @@ class DividendComputation < ApplicationRecord
   end
 
   def finalized?
-    finalized_at.present?
+    finalized_at?
   end
 
   def mark_as_finalized!
