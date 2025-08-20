@@ -132,6 +132,7 @@ const DividendComputation = ({ id }: { id: string }) => {
       });
       return dividendComputationSchema.parse(await response.json());
     },
+    throwOnError: true,
   });
 
   const computationOutputs = dividendComputation?.computation_outputs ?? [];

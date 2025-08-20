@@ -33,6 +33,10 @@ class Internal::Companies::DividendComputationsController < Internal::Companies:
   def show
     authorize @dividend_computation
 
+    if @dividend_computation.finalized?
+      render json: { error: "Dividend computation is finalized" }, status: :not_found
+      return
+    end
 
     render json: DividendComputationPresenter.new(@dividend_computation).props
   end
